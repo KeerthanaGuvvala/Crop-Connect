@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CropConnect - Farmer Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h2, h3 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        input, select, textarea, button {
+            padding: 10px;
+            margin: 5px 0;
+            width: calc(100% - 22px);
+        }
+        input[type="file"] {
+            padding: 3px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .dashboard-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .dashboard-options button {
+            background-color: #007BFF;
+            border-radius: 5px;
+        }
+        .dashboard-options button:hover {
+            background-color: #0056b3;
+        }
+        .add-product-form, .view-products-list, .manage-orders {
+            display: none;
+            margin-top: 20px;
+        }
+        .product-list {
+            margin-top: 20px;
+        }
+        .product-item {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+        .order-status {
+            margin-top: 10px;
+        }
+        .order-item {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Farmer Homepage -->
+<div class="container" id="farmerHomepage">
+    <h2>Welcome to Your Farmer Dashboard</h2>
+    <div class="dashboard-options">
+        <button onclick="navigateToAddProduct()">Add New Product</button>
+        <button onclick="viewAddedProducts()">View Added Products</button>
+        <button onclick="manageOrders()">Manage Orders</button>
+        <button onclick="viewReviews()">View Customer Reviews</button>
+    </div>
+    
+    <!-- Add Product Form -->
+    <div class="add-product-form" id="addProductForm">
+        <h3>Add New Product</h3>
+        <form id="productForm">
+            <input type="text" id="productName" placeholder="Product Name" required>
+            <textarea id="productDescription" placeholder="Product Description" rows="4" required></textarea>
+            <input type="number" id="pricePerKg" placeholder="Price per kg" required>
+            <input type="number" id="availableQuantity" placeholder="Available Quantity" required>
+            <input type="file" id="productImage" required>
+            <button type="submit">Add Product</button>
+        </form>
+    </div>
+
+    <!-- View Added Products -->
+    <div class="view-products-list" id="viewProductsList">
+        <h3>Your Added Products</h3>
+        <div id="productsList" class="product-list"></div>
+    </div>
+
+    <!-- Manage Orders -->
+    <div class="manage-orders" id="manageOrders">
+        <h3>Manage Orders</h3>
+        <div class="order-status">
+            <h4>New Orders</h4>
+            <div id="newOrders" class="order-list"></div>
+            <h4>Pending Orders</h4>
+            <div id="pendingOrders" class="order-list"></div>
+            <h4>Completed Orders</h4>
+            <div id="completedOrders" class="order-list"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Store products and orders data
+    const farmerProducts = [];
+    const orders = []; // Stores orders data for the farmer
+
+    // Navigate to Add Product Page
+    function navigateToAddProduct() {
+        document.getElementById('addProductForm').style.display = 'block';
+        document.getElementById('viewProductsList').style.display = 'none';
+        document.getElementById('manageOrders').style.display = 'none';
+    }
+
+    // View added products
+    function viewAddedProducts() {
+        document.getElementById('addProductForm').style.display = 'none';
+        document.getElementById('viewProductsList').style.display = 'block';
+        document.getElementById('manageOrders').style.display = 'none';
+        displayProducts();
+    }
+
+    // Manage Orders
+    function manageOrders() {
+        document.getElementById('addProductForm').style.display = 'none';
+        document.getElementById('viewProductsList').style.display = 'none';
+        document.getElementById('manageOrders').style.display = 'block';
+        displayOrders();
+    }
+
+    // Display added products
+    function displayProducts() {
+        const productsListDiv = document.getElementById('productsList');
+        productsListDiv.innerHTML = '';  // Clear previous list
+
+        farmerProducts.forEach((product, index) => {
+            const productDiv = document.createElement('div');
+            productDiv.className = 'product-item';
+            productDiv.innerHTML = `
+                <strong>${product.name}</strong><br>
+                Description: ${product.description}<br>
+                Price: ₹${product.pricePerKg} per kg<br>
+                Available Quantity: ${product.availableQuantity} kg<br>
+                <img src="${product.image}" alt="${product.name}" width="150"><br>
+            `;
+            productsListDiv.appendChild(productDiv);
+        });
+    }
+
+    // Display orders by status
+    function displayOrders() {
+        const newOrdersDiv = document.getElementById('newOrders');
+        const pendingOrdersDiv = document.getElementById('pendingOrders');
+        const completedOrdersDiv = document.getElementById('completedOrders');
+        
+        newOrdersDiv.innerHTML = '';
+        pendingOrdersDiv.innerHTML = '';
+        completedOrdersDiv.innerHTML = '';
+
+        orders.forEach(order => {
+            const orderDiv = document.createElement('div');
+            orderDiv.className = 'order-item';
+            orderDiv.innerHTML = `
+                <strong>Order ID: ${order.id}</strong><br>
+                Product: ${order.productName}<br>
+                Quantity: ${order.quantity} kg<br>
+                Price: ₹${order.price}<br>
+                Status: ${order.status}<br>
+                <button onclick="updateOrderStatus(${order.id}, 'Pending')">Mark as Pending</button>
+                <button onclick="updateOrderStatus(${order.id}, 'Completed')">Mark as Completed</button>
+            `;
+            if (order.status === 'New') {
+                newOrdersDiv.appendChild(orderDiv);
+            } else if (order.status === 'Pending') {
+                pendingOrdersDiv.appendChild(orderDiv);
+            } else if (order.status === 'Completed') {
+                completedOrdersDiv.appendChild(orderDiv);
+            }
+        });
+    }
+
+    // Update the status of an order
+    function updateOrderStatus(orderId, newStatus) {
+        const order = orders.find(o => o.id === orderId);
+        if (order) {
+            order.status = newStatus;
+            displayOrders(); // Refresh orders display
+        }
+    }
+
+    // Add new product to the list
+    document.getElementById('productForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        addNewProduct();
+    });
+
+    // Add new product to the list
+    function addNewProduct() {
+        const productName = document.getElementById('productName').value;
+        const productDescription = document.getElementById('productDescription').value;
+        const pricePerKg = document.getElementById('pricePerKg').value;
+        const availableQuantity = document.getElementById('availableQuantity').value;
+        const productImage = document.getElementById('productImage').files[0];
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const product = {
+                name: productName,
+                description: productDescription,
+                pricePerKg: pricePerKg,
+                availableQuantity: availableQuantity,
+                image: e.target.result
+            };
+
+            farmerProducts.push(product);
+            alert('Product added successfully!');
+            document.getElementById('productForm').reset();
+        };
+
+        reader.readAsDataURL(productImage);
+    }
+
+    // Placeholder for managing reviews (not implemented)
+    function viewReviews() {
+        alert("Viewing reviews is not yet implemented.");
+    }
+</script>
+
+</body>
+</html>
